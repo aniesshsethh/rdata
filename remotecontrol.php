@@ -3241,6 +3241,6 @@ class remotecontrol_handle
         }
         fclose($fp);
        
-        return "hi";         
+        return "export successful";         
     }
 }
