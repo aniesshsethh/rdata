@@ -2622,7 +2622,7 @@ class remotecontrol_handle
                             }
                             $j++;
                             $mappingArray[$value['qid']]=$j;
-                            $questionsData[] = array($j,ms_RmBr($value['title']),$qtype,count($subquestion),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");                            
+                            $questionsData[] = array($j,ms_RmBr($value['title']),$qtype,count($subquestion),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");                            
                             foreach($subquestion as $subq)
                             {
                                 $dataHeader[] = ms_RmBr($subq['question']);  
@@ -2655,7 +2655,7 @@ class remotecontrol_handle
                             }                                    
                             $optionsData[$j] = $options;
                                                  
-                            $questionsData[] = array($j,ms_RmBr($value['title']),'factor',1,count($dataHeader)+1,count($optionsData[$j]),$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+                            $questionsData[] = array($j,ms_RmBr($value['title']),'factor',1,count($dataHeader)+1,count($optionsData[$j]),$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");
                             $dataHeader[] = ms_RmBr($value['title']);     
                             $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
                             if($othercheck[0]->attributes['other'] == 'Y'){
@@ -2680,7 +2680,7 @@ class remotecontrol_handle
                                   $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
                                   $j++;        
                                   $mappingArray[$value['qid']]=$j;
-                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                   foreach($data as $insertdata)
                                   {
                                       $dataHeader[] = $insertdata->attributes['question'];
@@ -2690,7 +2690,7 @@ class remotecontrol_handle
                             foreach($subquestion as $key=>$values){
                                   $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));
                                   $j++;                        
-                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                   foreach($data as $insertdata)
                                   {
                                       $dataHeader[] = ms_RmBr($insertdata->attributes['question']);
@@ -2709,7 +2709,7 @@ class remotecontrol_handle
                             $data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
                             $j++;
                             $mappingArray[$value['qid']]=$j;
-                            $questionsData[] = array($j,ms_RmBr($value['title']),'order',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                            $questionsData[] = array($j,ms_RmBr($value['title']),'order',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                             foreach($data as $attributevalue){
                                  $dataHeader[] = ms_RmBr($attributevalue['answer']);
                             }
@@ -2730,7 +2730,7 @@ class remotecontrol_handle
                                 }
 
                                 
-                                $questionsData[] = array($j,ms_RmBr($value['title']),$type,count($data),count($dataHeader)+1,count($answer),$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                                $questionsData[] = array($j,ms_RmBr($value['title']),$type,count($data),count($dataHeader)+1,count($answer),$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                 $splitstring = '';
                                 if($sLanguageCode == 'de'){
                                     $splitstring = 'HINWEIS';
@@ -2760,7 +2760,7 @@ class remotecontrol_handle
                     case 'N':                    
                     	$j++;    
                     	$mappingArray[$value['qid']]=$j;
-                        $questionsData[] = array($j,ms_RmBr($value['title']),'ordered',1,count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                        $questionsData[] = array($j,ms_RmBr($value['title']),'ordered',1,count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                         $dataHeader[] = $value['title'];                        
                         break;
                     case 'A':
@@ -2776,14 +2776,14 @@ class remotecontrol_handle
                     		}
 	                    	$data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ) );
 	                    	if($type == 'A'){
-		                    		$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,5,$sLanguageCode,$info,ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+		                    		$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,5,$sLanguageCode,'',ms_RmBr($value['question']),$info,$value['gid']."|".$value['qid']."(".$type.")");
 		                    		$options = array();
 		                    		for($i=1;$i<=5;$i++){
 		                    			$options[]=$i;
 		                    		}
 		                    		$optionsData[$j] = $options;
 	                    	}elseif($type=='B'){
-	                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,10,$sLanguageCode,$info,ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+	                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,10,$sLanguageCode,'',ms_RmBr($value['question']),$info,$value['gid']."|".$value['qid']."(".$type.")");
 	                    			$options = array();
 	                    			for($i=1;$i<=10;$i++){
 	                    				$options[]=$i;
@@ -2812,7 +2812,7 @@ class remotecontrol_handle
                     				$options[]=$ops;
                     			}
                     			$optionsData[$j] = $options;
-                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,3,$sLanguageCode,'SCALE=BIPOLAR',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,3,$sLanguageCode,'',ms_RmBr($value['question']),'SCALE=BIPOLAR',$value['gid']."|".$value['qid']."(".$type.")");
                     		}elseif($type=='E'){
                     			$options = array();
                     			$op = array('Increase','Same','Decrease');
@@ -2820,7 +2820,7 @@ class remotecontrol_handle
                     				$options[]=$ops;
                     			}
                     			$optionsData[$j] = $options;
-                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,3,$sLanguageCode,'SCALE=BIPOLAR',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+                    			$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,3,$sLanguageCode,'',ms_RmBr($value['question']),'SCALE=BIPOLAR',$value['gid']."|".$value['qid']."(".$type.")");
                     		}
                     		else{ }
                     		$alreadyProcessed[] = $value['qid'];
@@ -2837,7 +2837,7 @@ class remotecontrol_handle
                                 $qid = $value['qid'];
                                 $answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
                                 $data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'question_order') );
-                                $questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,count($answer),$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");    
+                                $questionsData[] = array($j,ms_RmBr($value['title']),'ordered',count($data),count($dataHeader)+1,count($answer),$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                 $splitstring = '';
                                 if($sLanguageCode == 'de'){
                                     $splitstring = 'HINWEIS';
@@ -2862,7 +2862,7 @@ class remotecontrol_handle
                     case '5':
                     	$j++;
                     	$mappingArray[$value['qid']]=$j;
-                    	$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',1,count($dataHeader)+1,5,$sLanguageCode,'',ms_RmBr($value['question']),$value['gid']."|".$value['qid']."(".$type.")");
+                    	$questionsData[] = array($j,ms_RmBr($value['title']),'ordered',1,count($dataHeader)+1,5,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");
                     	$dataHeader[] = ms_RmBr($value['title']);
                     	$options = array();
                     	for($i=1;$i<=5;$i++){
