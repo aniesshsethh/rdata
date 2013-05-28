@@ -2622,13 +2622,17 @@ class remotecontrol_handle
                             }
                             $j++;
                             $mappingArray[$value['qid']]=$j;
-                            $questionsData[] = array($j,ms_RmBr($value['title']),$qtype,count($subquestion),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");                            
+                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+                            $headercount = count($subquestion);
+                            if($othercheck[0]->attributes['other'] == 'Y'){
+                            	$headercount++;
+                            }
+                            $questionsData[] = array($j,ms_RmBr($value['title']),$qtype,$headercount,count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");                            
                             foreach($subquestion as $subq)
                             {
                                 $dataHeader[] = ms_RmBr($subq['question']);  
 
                             }                        
-                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));                      
                             if($othercheck[0]->attributes['other'] == 'Y'){                               
                                 $dataHeader[] = 'other';                            
                             }
@@ -2652,12 +2656,16 @@ class remotecontrol_handle
                             {
                                 $options[] = $subq->attributes['answer'];
 
-                            }                                    
+                            } 
+                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+                            if($othercheck[0]->attributes['other'] == 'Y'){
+                            	$options[] = 'other';
+                            }                                   
                             $optionsData[$j] = $options;
-                                                 
+                            
+                               
                             $questionsData[] = array($j,ms_RmBr($value['title']),'factor',1,count($dataHeader)+1,count($optionsData[$j]),$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");
                             $dataHeader[] = ms_RmBr($value['title']);     
-                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
                             if($othercheck[0]->attributes['other'] == 'Y'){
                             	$dataHeader[] = 'other';
                             }
@@ -2680,7 +2688,7 @@ class remotecontrol_handle
                                   $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
                                   $j++;        
                                   $mappingArray[$value['qid']]=$j;
-                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
+                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']." [".$values['question']."]"),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                   foreach($data as $insertdata)
                                   {
                                       $dataHeader[] = $insertdata->attributes['question'];
@@ -2690,7 +2698,7 @@ class remotecontrol_handle
                             foreach($subquestion as $key=>$values){
                                   $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));
                                   $j++;                        
-                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
+                                  $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']." [".$values['question']."]"),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                   foreach($data as $insertdata)
                                   {
                                       $dataHeader[] = ms_RmBr($insertdata->attributes['question']);
@@ -2760,7 +2768,7 @@ class remotecontrol_handle
                     case 'N':                    
                     	$j++;    
                     	$mappingArray[$value['qid']]=$j;
-                        $questionsData[] = array($j,ms_RmBr($value['title']),'ordered',1,count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
+                        $questionsData[] = array($j,ms_RmBr($value['title']),'numeric',1,count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
                         $dataHeader[] = $value['title'];                        
                         break;
                     case 'A':
@@ -2891,6 +2899,8 @@ class remotecontrol_handle
             	foreach($fieldmap as $key=>$value)
             	{
             		$type = $value['type'];
+            		
+            		
             		switch($type){
 	            		case 'M':
 	            			if(!in_array($value['qid'],$alreadyProcessed))
@@ -2900,17 +2910,21 @@ class remotecontrol_handle
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
 	            					if($result->attributes[$sqga] == 'Y'){
 	            						$resultArray[$i][] = 1;
-	            					}elseif($result->attributes[$sqga] == 'N'){
-	            						$resultArray[$i][] = 0;
 	            					}else{
-	            						$resultArray[$i][] = '';
+	            						$resultArray[$i][] = 0;
 	            					}         					         			
 	            					
 	            				}
 	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid']."other";
-	            					$resultArray[$i][] = ms_RmBr($result->attributes[$sqga]);
+	            					if(isset($result->attributes[$sqga])){
+	            						$resultArray[$i][] = 1;
+	            					}
+	            					else{
+	            						$resultArray[$i][] = 0;
+	            					}
+	            					
 	            				}
 	            				$alreadyProcessed[] = $value['qid'];
 	            			}
@@ -3010,7 +3024,7 @@ class remotecontrol_handle
 	            						if(isset($result->attributes[$sqga])){
 	            							$resultArray[$i][] = $result->attributes[$sqga];
 	            						}else{
-	            							$resultArray[$i][] = '';
+	            							$resultArray[$i][] = 0;
 	            						}
 	            					}
 	            				}
@@ -3023,7 +3037,7 @@ class remotecontrol_handle
 	            						if(isset($result->attributes[$sqga])){
 	            							$resultArray[$i][] = $result->attributes[$sqga];
 	            						}else{
-	            							$resultArray[$i][] = '';
+	            							$resultArray[$i][] = 0;
 	            						}
 	            					}
 	            					
@@ -3188,7 +3202,7 @@ class remotecontrol_handle
         }
         fclose($fp);
         //Data.csv writing Just the headers
-        $fp = fopen($directory.'/'.$filename.'02.csv', 'w');        
+        $fp = fopen($directory.'/'.$filename.'03.csv', 'w');        
         fputcsv($fp, $dataHeader);
       	foreach($resultArray as $key=>$value){
       		fputcsv($fp, $value);
@@ -3234,7 +3248,7 @@ class remotecontrol_handle
         	$csv_array[] = Array($k, $v);
         }
         
-        $fp = fopen($directory.'/'.$filename.'03.csv', 'w');
+        $fp = fopen($directory.'/'.$filename.'02.csv', 'w');
         fputcsv($fp, $header);
         foreach($writearray as $key=>$value){
         	fputcsv($fp,$value);
