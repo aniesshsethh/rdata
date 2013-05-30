@@ -2586,8 +2586,7 @@ class remotecontrol_handle
     	}
         $oSurvey = Survey::model()->findByPk($iSurveyID);
         $dataHeader = array();
-        $dataHeader[] ='';
-        $dataHeader[] ='ID';
+       
         $questionsData = array();
         $optionsData = array(); 
         $alreadyProcessed = array();
@@ -2895,12 +2894,10 @@ class remotecontrol_handle
             	$i++;
             	$resultArray[$i][]=$result->attributes['id'];
             	$resultArray[$i][]=$result->attributes['token'];
-            	
+            	$alreadyProcessed = array();
             	foreach($fieldmap as $key=>$value)
             	{
             		$type = $value['type'];
-            		
-            		
             		switch($type){
 	            		case 'M':
 	            			if(!in_array($value['qid'],$alreadyProcessed))
@@ -3069,6 +3066,7 @@ class remotecontrol_handle
 	            			break;
 	            		case 'F':
 	            			if(!in_array($value['qid'],$alreadyProcessed)){
+	            				
 	            				$qid = $value['qid'];
 	            				
 	            				$data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ) );
@@ -3202,7 +3200,10 @@ class remotecontrol_handle
         }
         fclose($fp);
         //Data.csv writing Just the headers
-        $fp = fopen($directory.'/'.$filename.'03.csv', 'w');        
+        $fp = fopen($directory.'/'.$filename.'03.csv', 'w');
+        /*$dataHeader[] ='';
+        $dataHeader[] ='ID';*/
+        array_unshift($dataHeader,'','ID');
         fputcsv($fp, $dataHeader);
       	foreach($resultArray as $key=>$value){
       		fputcsv($fp, $value);
