@@ -2896,6 +2896,7 @@ class remotecontrol_handle
 			            	->select("*")
 							->from("{{survey_$iSurveyID}} surveys")
 							->join("{{tokens_$iSurveyID}} tokens","tokens.token = surveys.token")
+							->order('tid asc')
 							->where("completed != 'N'")
 							->queryAll();
          
@@ -3221,7 +3222,7 @@ class remotecontrol_handle
    
         $filename = $iSurveyID."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
-        $header = array('#','label','type','item','offset','level','lang','unit','question','info','comment');
+        $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
         fputcsv($fp, $header);
         foreach ($questionsData as $fields) {
             fputcsv($fp, $fields);
