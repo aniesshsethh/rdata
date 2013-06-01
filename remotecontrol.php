@@ -2584,6 +2584,12 @@ class remotecontrol_handle
     		$text = preg_replace ('/^[\pZ\pC]+|[\pZ\pC]+$/u', ' ',$text);
     		return $text;
     	}
+    	
+    	if(Yii::app()->session['USER_RIGHT_SUPERADMIN'])
+    	{
+    		return "Not a Valid User";
+    	}
+    	
         $oSurvey = Survey::model()->findByPk($iSurveyID);
         $dataHeader = array();
        
@@ -2886,16 +2892,22 @@ class remotecontrol_handle
             }
 			 // Question and level CSV files - end
 			 //	Data.csv start
-            $oResponses = Survey_dynamic::model($iSurveyID)->findAll();
+            $data=Yii::app()->db->createCommand()
+			            	->select("*")
+							->from("{{survey_$iSurveyID}} surveys")
+							->join("{{tokens_$iSurveyID}} tokens","tokens.token = surveys.token")
+							->where("completed != 'N'")
+							->queryAll();
+         
             $alreadyProcessed = array();
             $resultArray = array();
             $i = 0;
             
-            foreach($oResponses as $result){            	
+            foreach($data as $result){            	
             	$i++;
             	
-            	$resultArray[$i][]=$result->attributes['id'];
-            	$resultArray[$i][]=$result->attributes['token'];
+            	$resultArray[$i][]=$result['id'];
+            	$resultArray[$i][]=$result['token'];
             	$alreadyProcessed = array();
             	foreach($fieldmap as $key=>$value)
             	{
@@ -2908,7 +2920,7 @@ class remotecontrol_handle
 	            				foreach($subquestion as $suboption){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
 	            					
-	            					if($result->attributes[$sqga] == 'Y'){
+	            					if($result[$sqga] == 'Y'){
 	            						$resultArray[$i][] = 1;
 	            					}else{
 	            						$resultArray[$i][] = 0;
@@ -2918,7 +2930,7 @@ class remotecontrol_handle
 	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid']."other";
-	            					if(isset($result->attributes[$sqga])){
+	            					if(isset($result[$sqga])){
 	            						$resultArray[$i][] = 1;
 	            					}
 	            					else{
@@ -2935,8 +2947,8 @@ class remotecontrol_handle
 		            			$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
 		            			foreach($subquestion as $suboption){
 		            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
-		            				if(isset($result->attributes[$sqga])){
-		            					$resultArray[$i][] = str_replace(',','.',$result->attributes[$sqga]);
+		            				if(isset($result[$sqga])){
+		            					$resultArray[$i][] = str_replace(',','.',$result[$sqga]);
 		            				}else{
 		            					$resultArray[$i][] = '';
 		            				}
@@ -2952,13 +2964,13 @@ class remotecontrol_handle
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
 	            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
-	            				if(isset($result->attributes[$sqga])){	            					
-	            					if($result->attributes[$sqga] == '-oth-'){
+	            				if(isset($result[$sqga])){	            					
+	            					if($result[$sqga] == '-oth-'){
 		            					$resultArray[$i][] = '-oth-';
-		            					$resultArray[$i][] = ms_RmBr($result->attributes[$sqga."other"]);
+		            					$resultArray[$i][] = ms_RmBr($result[$sqga."other"]);
 	            					}
 	            					else{
-										$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result->attributes[$sqga] ),array('order'=>'sortorder') );
+										$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
 	            						$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            						$resultArray[$i][] = $levelKey+1;
 	            						$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
@@ -2972,7 +2984,7 @@ class remotecontrol_handle
 	            					$resultArray[$i][] = '';
 	            				}
 								if($type == 'O'){
-									$resultArray[$i][] = ms_RmBr($result->attributes[$sqga."comment"]);
+									$resultArray[$i][] = ms_RmBr($result[$sqga."comment"]);
 								}
 	            				$alreadyProcessed[] = $value['qid'];
 	            			}
@@ -2981,7 +2993,7 @@ class remotecontrol_handle
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
 		            			$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
-		            			if($result->attributes[$sqga]=='Y'){
+		            			if($result[$sqga]=='Y'){
 		            				$resultArray[$i][] = 1;
 		            			}
 		            			else{
@@ -2995,11 +3007,11 @@ class remotecontrol_handle
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
 		            			$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
-		            			if(isset($result->attributes[$sqga])){
-		            				if($result->attributes[$sqga] == 'M'){
+		            			if(isset($result[$sqga])){
+		            				if($result[$sqga] == 'M'){
 		            					$resultArray[$i][] = 1;
 		            				}
-		            				elseif($result->attributes[$sqga] == 'F'){
+		            				elseif($result[$sqga] == 'F'){
 		            					$resultArray[$i][] = 2;
 		            				}
 		            				else{
@@ -3021,11 +3033,11 @@ class remotecontrol_handle
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$values->attributes['title']."_".$insertdata->attributes['title'];
-	            						if(is_null($result->attributes[$sqga])){
+	            						if(is_null($result[$sqga])){
 	            							$resultArray[$i][] = '';
 	            						}else{
-	            							if(isset($result->attributes[$sqga])){
-	            								$resultArray[$i][] = $result->attributes[$sqga];
+	            							if(isset($result[$sqga])){
+	            								$resultArray[$i][] = $result[$sqga];
 	            							}else{
 	            								$resultArray[$i][] = 0;
 	            							}
@@ -3039,11 +3051,11 @@ class remotecontrol_handle
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$insertdata->attributes['title']."_".$values->attributes['title'];
-	            						if(is_null($result->attributes[$sqga])){
+	            						if(is_null($result[$sqga])){
 	            							$resultArray[$i][] = '';
 	            						}else{
-	            							if(isset($result->attributes[$sqga])){
-	            								$resultArray[$i][] = $result->attributes[$sqga];
+	            							if(isset($result[$sqga])){
+	            								$resultArray[$i][] = $result[$sqga];
 	            							}else{
 	            								$resultArray[$i][] = 0;
 	            							}
@@ -3066,9 +3078,9 @@ class remotecontrol_handle
 	            				$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
 	            				foreach($data as $attributevalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$attributevalue['code'];
-	            					if(isset($result->attributes[$sqga])){
+	            					if(isset($result[$sqga])){
 	            					
-	            						$resultArray[$i][] = $result->attributes[$sqga];
+	            						$resultArray[$i][] = $result[$sqga];
 	            					}
 	            					else{
 	            						$resultArray[$i][] = '';
@@ -3087,8 +3099,8 @@ class remotecontrol_handle
 	            				foreach($data as $questionvalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue['title'];
 	            					
-	            		     		if(isset($result->attributes[$sqga])){
-	            		     			$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result->attributes[$sqga] ),array('order'=>'sortorder') );
+	            		     		if(isset($result[$sqga])){
+	            		     			$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
 	            		     			$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            		     			$resultArray[$i][] = $levelKey+1;
 	            					}
@@ -3102,8 +3114,8 @@ class remotecontrol_handle
 	            		case 'N':
 	            			if(!in_array($value['qid'],$alreadyProcessed)){
 	            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
-	            					if(isset($result->attributes[$sqga])){
-	            						$resultArray[$i][] = str_replace(',','.',$result->attributes[$sqga]);
+	            					if(isset($result[$sqga])){
+	            						$resultArray[$i][] = str_replace(',','.',$result[$sqga]);
 	            					}
 	            					else{
 	            						$resultArray[$i][] = '';
@@ -3118,8 +3130,8 @@ class remotecontrol_handle
 	            				$data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'question_order')  );
 	            				foreach($data as $questionvalue){
 	            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue->attributes['title'];
-	            					if(isset($result->attributes[$sqga])){
-	            						$resultArray[$i][] = $result->attributes[$sqga];
+	            					if(isset($result[$sqga])){
+	            						$resultArray[$i][] = $result[$sqga];
 	            					}
 	            					else{
 	            						$resultArray[$i][] = '';
@@ -3136,18 +3148,18 @@ class remotecontrol_handle
 	            			
 	            				foreach($data as $questionvalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue->attributes['title'];
-	            					if(isset($result->attributes[$sqga])){
-	            						if($result->attributes[$sqga] == 'Y'){
+	            					if(isset($result[$sqga])){
+	            						if($result[$sqga] == 'Y'){
 	            							$resultArray[$i][] = 1;
-	            						}elseif($result->attributes[$sqga] == 'N'){
+	            						}elseif($result[$sqga] == 'N'){
 	            							$resultArray[$i][] = 2;
-	            						}elseif($result->attributes[$sqga] == 'U'){
+	            						}elseif($result[$sqga] == 'U'){
 	            							$resultArray[$i][] = 3;
-	            						}elseif($result->attributes[$sqga] == 'I'){
+	            						}elseif($result[$sqga] == 'I'){
 	            							$resultArray[$i][] = 1;
-	            						}elseif($result->attributes[$sqga] == 'S'){
+	            						}elseif($result[$sqga] == 'S'){
 	            							$resultArray[$i][] = 2;
-	            						}elseif($result->attributes[$sqga] == 'D'){
+	            						}elseif($result[$sqga] == 'D'){
 	            							$resultArray[$i][] = 3;
 	            						}
 	            						else{
@@ -3169,8 +3181,8 @@ class remotecontrol_handle
 	            				foreach($data as $questionvalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue->attributes['title'];
 	            					
-	            					if(isset($result->attributes[$sqga])){
-	            						$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result->attributes[$sqga] ),array('order'=>'sortorder') );
+	            					if(isset($result[$sqga])){
+	            						$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
 	            						$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            						$resultArray[$i][] = $levelKey+1;
 	            						
@@ -3185,8 +3197,8 @@ class remotecontrol_handle
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
 		            			$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
-		            			if(isset($result->attributes[$sqga])){
-		            				$resultArray[$i][] = $result->attributes[$sqga];
+		            			if(isset($result[$sqga])){
+		            				$resultArray[$i][] = $result[$sqga];
 		            			}
 		            			else{
 		            				$resultArray[$i][] = '';
@@ -3203,7 +3215,10 @@ class remotecontrol_handle
             //	Data.csv start
         }
         //Question.csv writing
-        $directory = 'rdata';
+        
+        $directory = 'rdata/'.$iSurveyID;
+        mkdir($directory, 0775);
+   
         $filename = $iSurveyID."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('#','label','type','item','offset','level','lang','unit','question','info','comment');
