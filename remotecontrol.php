@@ -3224,6 +3224,8 @@ class remotecontrol_handle
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
         fputcsv($fp, $header);
+        return implode(",", $header);
+        
         foreach ($questionsData as $fields) {
             fputcsv($fp, $fields);
         }
