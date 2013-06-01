@@ -3215,10 +3215,22 @@ class remotecontrol_handle
             }
             //	Data.csv start
         }
+
         //Question.csv writing
         function my_fputcsv($handle, $fieldsarray, $delimiter = ",", $enclosure ='"'){
-        	$glue = $enclosure . $delimiter . $enclosure;
-        	return fwrite($handle, $enclosure . implode($glue,$fieldsarray) . $enclosure.PHP_EOL);
+        	$glue1 = $enclosure . $delimiter . $enclosure;
+        	$glue1 = $delimiter;
+        	$string = "";
+        	foreach($fieldsarray as $key=>$value){
+        			if(is_numeric($value) || empty($value)){
+        				$string .= ''.$value.',';
+        			}
+        			else{
+        				$string .= '"'.$value.'",';
+        			}
+        	}      	
+        	//return $string;
+        	return fwrite($handle, $string.PHP_EOL);
         }
         $directory = 'rdata/'.$iSurveyID;
         mkdir($directory, 0775);
@@ -3226,7 +3238,8 @@ class remotecontrol_handle
         $filename = $iSurveyID."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
-        my_fputcsv($fp, $header);
+        $abc = my_fputcsv($fp, $header);
+        //return $abc;
      
         
         foreach ($questionsData as $fields) {
