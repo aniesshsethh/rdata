@@ -2918,22 +2918,29 @@ class remotecontrol_handle
 	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
 	            				foreach($subquestion as $suboption){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
-	            					
-	            					if($result[$sqga] == 'Y'){
-	            						$resultArray[$i][] = 1;
+	            					if(is_null($result[$sqga])){
+	            						$resultArray[$i][] = '';
 	            					}else{
-	            						$resultArray[$i][] = 0;
-	            					}         					         			
+	            						if($result[$sqga] == 'Y'){
+	            							$resultArray[$i][] = 1;
+	            						}else{
+	            							$resultArray[$i][] = 0;
+	            						}
+	            					}
+	            					         			
 	            					
 	            				}
 	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid']."other";
-	            					if(isset($result[$sqga])){
-	            						$resultArray[$i][] = 1;
-	            					}
-	            					else{
-	            						$resultArray[$i][] = 0;
+	            					if(is_null($result[$sqga])){
+	            						$resultArray[$i][] = '';
+	            					}else{
+	            						if($result[$sqga] == 'Y'){
+	            							$resultArray[$i][] = $result[$sqga];
+	            						}else{
+	            							$resultArray[$i][] = 0;
+	            						}
 	            					}
 	            					
 	            				}
