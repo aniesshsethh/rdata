@@ -2671,9 +2671,7 @@ class remotecontrol_handle
                                
                             $questionsData[] = array($j,ms_RmBr($value['title']),'factor',1,count($dataHeader)+1,count($optionsData[$j]),$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");
                             $dataHeader[] = ms_RmBr($value['title']);     
-                            if($othercheck[0]->attributes['other'] == 'Y'){
-                            	$dataHeader[] = 'other';
-                            }
+             
                             if($type=='Y'){
                             	$optionsData[$j] = array('Yes','No');
                             }
@@ -2967,17 +2965,16 @@ class remotecontrol_handle
 	            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'];
 	            				if(isset($result[$sqga])){	            					
 	            					if($result[$sqga] == '-oth-'){
-		            					$resultArray[$i][] = '-oth-';
-		            					$resultArray[$i][] = ms_RmBr($result[$sqga."other"]);
+		            					$levelKey = array_search('other',$optionsData[$mappingArray[$value['qid']]]);
+		            					$resultArray[$i][] = $levelKey+1;
+		            					$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
 	            					}
 	            					else{
 										$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
 	            						$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            						$resultArray[$i][] = $levelKey+1;
 	            						$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
-	            						if($othercheck[0]->attributes['other'] == 'Y'){
-	            							$resultArray[$i][] = '';
-	            						}
+	            					
 	            						
 	            					}
 	            				}
@@ -3226,7 +3223,7 @@ class remotecontrol_handle
         				$string .= ''.$value.',';
         			}
         			else{
-        				$string .= '"'.ms_RmBr($value).'",';
+        				$string .= '"'.$value.'",';
         			}
         	}    
         	  	
