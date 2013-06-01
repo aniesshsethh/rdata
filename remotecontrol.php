@@ -3228,9 +3228,10 @@ class remotecontrol_handle
         			else{
         				$string .= '"'.$value.'",';
         			}
-        	}      	
+        	}    
+        	  	
         	//return $string;
-        	return fwrite($handle, $string.PHP_EOL);
+        	return fwrite($handle, substr($string,0,-1).PHP_EOL);
         }
         $directory = 'rdata/'.$iSurveyID;
         mkdir($directory, 0775);
@@ -3238,7 +3239,7 @@ class remotecontrol_handle
         $filename = $iSurveyID."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
-        $abc = my_fputcsv($fp, $header);
+       my_fputcsv($fp, $header);
         //return $abc;
      
         
