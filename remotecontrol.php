@@ -2713,7 +2713,7 @@ class remotecontrol_handle
                         break;
                     case 'R':
                         if($value['aid'] == 1){
-                            $data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
+                            $data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
                             $j++;
                             $mappingArray[$value['qid']]=$j;
                             $questionsData[] = array($j,ms_RmBr($value['title']),'order',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
@@ -2727,7 +2727,7 @@ class remotecontrol_handle
                               $alreadyProcessed[] = $value['qid']; 
                                 $qid = $value['qid'];
                                 $answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
-                                $data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ) );
+                                $data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'title')  );
                                 $j++;
                                 $mappingArray[$value['qid']]=$j;
                                 $type = 'ordered';
@@ -2890,8 +2890,10 @@ class remotecontrol_handle
             $alreadyProcessed = array();
             $resultArray = array();
             $i = 0;
-            foreach($oResponses as $result){
+            
+            foreach($oResponses as $result){            	
             	$i++;
+            	
             	$resultArray[$i][]=$result->attributes['id'];
             	$resultArray[$i][]=$result->attributes['token'];
             	$alreadyProcessed = array();
@@ -2905,6 +2907,7 @@ class remotecontrol_handle
 	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
 	            				foreach($subquestion as $suboption){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
+	            					
 	            					if($result->attributes[$sqga] == 'Y'){
 	            						$resultArray[$i][] = 1;
 	            					}else{
@@ -3018,11 +3021,16 @@ class remotecontrol_handle
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$values->attributes['title']."_".$insertdata->attributes['title'];
-	            						if(isset($result->attributes[$sqga])){
-	            							$resultArray[$i][] = $result->attributes[$sqga];
+	            						if(is_null($result->attributes[$sqga])){
+	            							$resultArray[$i][] = '';
 	            						}else{
-	            							$resultArray[$i][] = 0;
+	            							if(isset($result->attributes[$sqga])){
+	            								$resultArray[$i][] = $result->attributes[$sqga];
+	            							}else{
+	            								$resultArray[$i][] = 0;
+	            							}
 	            						}
+	            						
 	            					}
 	            				}
 	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
@@ -3031,10 +3039,14 @@ class remotecontrol_handle
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$insertdata->attributes['title']."_".$values->attributes['title'];
-	            						if(isset($result->attributes[$sqga])){
-	            							$resultArray[$i][] = $result->attributes[$sqga];
+	            						if(is_null($result->attributes[$sqga])){
+	            							$resultArray[$i][] = '';
 	            						}else{
-	            							$resultArray[$i][] = 0;
+	            							if(isset($result->attributes[$sqga])){
+	            								$resultArray[$i][] = $result->attributes[$sqga];
+	            							}else{
+	            								$resultArray[$i][] = 0;
+	            							}
 	            						}
 	            					}
 	            					
@@ -3051,10 +3063,11 @@ class remotecontrol_handle
 	            		case 'R':
 	            			if($value['aid'] == 1){
 	            				
-	            				$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
+	            				$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
 	            				foreach($data as $attributevalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$attributevalue['code'];
 	            					if(isset($result->attributes[$sqga])){
+	            					
 	            						$resultArray[$i][] = $result->attributes[$sqga];
 	            					}
 	            					else{
@@ -3069,7 +3082,7 @@ class remotecontrol_handle
 	            				
 	            				$qid = $value['qid'];
 	            				
-	            				$data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ) );
+	            				$data = Questions::model()->findAllByAttributes(array('parent_qid' => $value['qid'], 'language'=> $sLanguageCode ) ,array('order'=>'title'));
 	            			
 	            				foreach($data as $questionvalue){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue['title'];
@@ -3229,10 +3242,12 @@ class remotecontrol_handle
         //Transpose the array build in the loop to something we can write in the file - start
         $max_array = array();
         for($s = 1;$s<=$max;$s++){
+        	
         	$max_array[] = $s;
         }
         
         $optionsData[0] = $max_array;
+     
         ksort($optionsData);
 
         $csv_array = Array();
@@ -3240,7 +3255,12 @@ class remotecontrol_handle
         $writearray = array();
         $header = array();
         foreach($optionsData as $k => $v) {
-        	$header[] = $k;
+        	if($k == 0){
+        		$header[] = '';
+        	}else{
+        		$header[] = $k;
+         	}
+        	
         	$i=0;
         	foreach($v as $r){
         		$writearray[$i][] = $r;
@@ -3250,8 +3270,11 @@ class remotecontrol_handle
         }
         
         $fp = fopen($directory.'/'.$filename.'02.csv', 'w');
+ 
         fputcsv($fp, $header);
+        
         foreach($writearray as $key=>$value){
+        	
         	fputcsv($fp,$value);
         }
         fclose($fp);
