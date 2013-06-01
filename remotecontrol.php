@@ -2896,7 +2896,7 @@ class remotecontrol_handle
 			            	->select("*")
 							->from("{{survey_$iSurveyID}} surveys")
 							->join("{{tokens_$iSurveyID}} tokens","tokens.token = surveys.token")
-							->order('tid asc')
+							->order('id asc')
 							->where("completed != 'N'")
 							->queryAll();
          
@@ -3226,7 +3226,7 @@ class remotecontrol_handle
         				$string .= ''.$value.',';
         			}
         			else{
-        				$string .= '"'.$value.'",';
+        				$string .= '"'.ms_RmBr($value).'",';
         			}
         	}    
         	  	
