@@ -3216,18 +3216,21 @@ class remotecontrol_handle
             //	Data.csv start
         }
         //Question.csv writing
-        
+        function my_fputcsv($handle, $fieldsarray, $delimiter = ",", $enclosure ='"'){
+        	$glue = $enclosure . $delimiter . $enclosure;
+        	return fwrite($handle, $enclosure . implode($glue,$fieldsarray) . $enclosure.PHP_EOL);
+        }
         $directory = 'rdata/'.$iSurveyID;
         mkdir($directory, 0775);
    
         $filename = $iSurveyID."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
-        fputcsv($fp, $header);
-        return implode(",", $header);
+        my_fputcsv($fp, $header);
+     
         
         foreach ($questionsData as $fields) {
-            fputcsv($fp, $fields);
+            my_fputcsv($fp, $fields);
         }
         fclose($fp);
         //Data.csv writing Just the headers
@@ -3235,9 +3238,9 @@ class remotecontrol_handle
         /*$dataHeader[] ='';
         $dataHeader[] ='ID';*/
         array_unshift($dataHeader,'','ID');
-        fputcsv($fp, $dataHeader);
+        my_fputcsv($fp, $dataHeader);
       	foreach($resultArray as $key=>$value){
-      		fputcsv($fp, $value);
+      		my_fputcsv($fp, $value);
       	}
         fclose($fp);
         
@@ -3289,11 +3292,11 @@ class remotecontrol_handle
         
         $fp = fopen($directory.'/'.$filename.'02.csv', 'w');
  
-        fputcsv($fp, $header);
+        my_fputcsv($fp, $header);
         
         foreach($writearray as $key=>$value){
         	
-        	fputcsv($fp,$value);
+        	my_fputcsv($fp,$value);
         }
         fclose($fp);
        
