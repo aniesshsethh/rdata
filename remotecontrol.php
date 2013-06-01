@@ -3223,7 +3223,7 @@ class remotecontrol_handle
         				$string .= ''.$value.',';
         			}
         			else{
-        				$string .= '"'.$value.'",';
+        				$string .= '"'.ms_RmBr($value).'",';
         			}
         	}    
         	  	
