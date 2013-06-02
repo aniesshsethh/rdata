@@ -2585,6 +2585,7 @@ class remotecontrol_handle
     		return $text;
     	}
     	
+    	
     	if(Yii::app()->session['USER_RIGHT_SUPERADMIN'])
     	{
     		return "Not a Valid User";
@@ -2604,8 +2605,10 @@ class remotecontrol_handle
             if (is_null($sLanguageCode)) $sLanguageCode=getBaseLanguageFromSurveyID($iSurveyID);
             
             $fieldmap = createFieldMap($iSurveyID,'full',true,false,$sLanguageCode);
+            
             unset($fieldmap['id']);unset($fieldmap['submitdate']);unset($fieldmap['lastpage']);unset($fieldmap['startlanguage']);unset($fieldmap['token']);unset($fieldmap['startdate']);
             unset($fieldmap['datestamp']);unset($fieldmap['ipaddr']);unset($fieldmap['refurl']);
+            //return $fieldmap;
          	//	Question and level CSV files - start
          	$j = 0;
             foreach($fieldmap as $key=>$value)
@@ -2618,7 +2621,7 @@ class remotecontrol_handle
                         if(!in_array($value['qid'],$alreadyProcessed))
                         {
                         	
-                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
+                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'], 'language'=> $sLanguageCode),array('order'=>'question_order'));
                             $qtype = 'logical';
                             $attquestion = Question_attributes::model()->findAllByAttributes(array('qid'=>$value['qid'],'attribute'=>'TYPE'));
                             if(isset($attquestion[0]->attributes['value']))
@@ -2627,7 +2630,7 @@ class remotecontrol_handle
                             }
                             $j++;
                             $mappingArray[$value['qid']]=$j;
-                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
                             $headercount = count($subquestion);
                             if($othercheck[0]->attributes['other'] == 'Y'){
                             	$headercount++;
@@ -2653,16 +2656,20 @@ class remotecontrol_handle
                     case 'W':
                         if(!in_array($value['qid'],$alreadyProcessed))
                         {
+                        	
                         	$j++;
                         	$mappingArray[$value['qid']]=$j;
                             $oAttributes = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
+                            
                             $options = array();
                             foreach($oAttributes as $subq)
                             {
                                 $options[] = $subq->attributes['answer'];
-
+                         
+                                
                             } 
-                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+              
+                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
                             if($othercheck[0]->attributes['other'] == 'Y'){
                             	$options[] = 'other';
                             }                                   
@@ -2686,9 +2693,9 @@ class remotecontrol_handle
                         break;
                     case ':':
                         if(!in_array($value['qid'],$alreadyProcessed)){                                           
-                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));                        
+                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0', 'language'=> $sLanguageCode),array('order'=>'title'));                        
                             foreach($subquestion as $key=>$values){   
-                                  $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
+                                  $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1', 'language'=> $sLanguageCode),array('order'=>'title'));
                                   $j++;        
                                   $mappingArray[$value['qid']]=$j;
                                   $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']." [".$values['question']."]"),'',$value['gid']."|".$value['qid']."(".$type.")");    
@@ -2697,9 +2704,9 @@ class remotecontrol_handle
                                       $dataHeader[] = $insertdata->attributes['question'];
                                   }
                             }
-                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));                        
+                            $subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1', 'language'=> $sLanguageCode),array('order'=>'title'));                        
                             foreach($subquestion as $key=>$values){
-                                  $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));
+                                  $data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0', 'language'=> $sLanguageCode),array('order'=>'title'));
                                   $j++;                        
                                   $questionsData[] = array($j,ms_RmBr($value['title']."-".$values['question']),'logical',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']." [".$values['question']."]"),'',$value['gid']."|".$value['qid']."(".$type.")");    
                                   foreach($data as $insertdata)
@@ -2707,7 +2714,7 @@ class remotecontrol_handle
                                       $dataHeader[] = ms_RmBr($insertdata->attributes['question']);
                                   }
                             }
-                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));                      
+                            $othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));                      
                             if($othercheck[0]->attributes['other'] == 'Y'){                               
                                 $dataHeader[] = 'other';                            
                             }
@@ -2735,7 +2742,7 @@ class remotecontrol_handle
                                 $j++;
                                 $mappingArray[$value['qid']]=$j;
                                 $type = 'ordered';
-                                $typeQuery = Question_attributes::model()->findAllByAttributes(array('qid' => $value['qid'],'attribute'=>'TYPE') );    
+                                $typeQuery = Question_attributes::model()->findAllByAttributes(array('qid' => $value['qid'],'attribute'=>'TYPE', 'language'=> $sLanguageCode) );    
                                 if($typeQuery[0]->attributes['value'] == 'FACTOR'){
                                 	$type = 'Factor';
                                 }
@@ -2781,7 +2788,7 @@ class remotecontrol_handle
                     		$j++;
                     		$mappingArray[$value['qid']]=$j;
                     		$info = '';
-                    		$typeQuery = Question_attributes::model()->findAllByAttributes(array('qid' => $value['qid'],'attribute'=>'SCALE') );
+                    		$typeQuery = Question_attributes::model()->findAllByAttributes(array('qid' => $value['qid'],'attribute'=>'SCALE', 'language'=> $sLanguageCode) );
                     		if($typeQuery[0]->attributes['value'] == 'BIPOLAR'){
                     			$info = 'SCALE=BIPOLAR';
                     		}
@@ -2888,14 +2895,14 @@ class remotecontrol_handle
                 }
                         
             }
+            
 			 // Question and level CSV files - end
 			 //	Data.csv start
-            $data=Yii::app()->db->createCommand()
+                   $data=Yii::app()->db->createCommand()
 			            	->select("*")
 							->from("{{survey_$iSurveyID}} surveys")
-							->join("{{tokens_$iSurveyID}} tokens","tokens.token = surveys.token")
 							->order('id asc')
-							->where("completed != 'N'")
+							->where("submitdate IS NOT NULL")
 							->queryAll();
          
             $alreadyProcessed = array();
@@ -2905,7 +2912,7 @@ class remotecontrol_handle
             foreach($data as $result){            	
             	$i++;
             	
-            	$resultArray[$i][]=$i;
+            	$resultArray[$i][]=$result['token'];
             	$resultArray[$i][]=$result['token'];
             	$alreadyProcessed = array();
             	foreach($fieldmap as $key=>$value)
@@ -2915,7 +2922,7 @@ class remotecontrol_handle
 	            		case 'M':
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
-	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
+	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'], 'language'=> $sLanguageCode),array('order'=>'question_order'));
 	            				foreach($subquestion as $suboption){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
 	            					if(is_null($result[$sqga])){
@@ -2931,7 +2938,7 @@ class remotecontrol_handle
 	            					         			
 	            					
 	            				}
-	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid']."other";
 	            					if(is_null($result[$sqga])){
@@ -2951,13 +2958,13 @@ class remotecontrol_handle
 	            		case 'K':
 	            			if(!in_array($value['qid'],$alreadyProcessed))
 	            			{
-		            			$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid']),array('order'=>'question_order'));
+		            			$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'], 'language'=> $sLanguageCode),array('order'=>'question_order'));
 		            			foreach($subquestion as $suboption){
 		            				$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$suboption->attributes['title'];
 		            				if(isset($result[$sqga])){
 		            					$resultArray[$i][] = str_replace(',','.',$result[$sqga]);
 		            				}else{
-		            					$resultArray[$i][] = '';
+		            					$resultArray[$i][] = 'NA';
 		            				}
 		            				
 		            				$alreadyProcessed[] = $value['qid'];
@@ -2975,13 +2982,13 @@ class remotecontrol_handle
 	            					if($result[$sqga] == '-oth-'){
 		            					$levelKey = array_search('other',$optionsData[$mappingArray[$value['qid']]]);
 		            					$resultArray[$i][] = $levelKey+1;
-		            					$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+		            					$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
 	            					}
 	            					else{
-										$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
+										$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
 	            						$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            						$resultArray[$i][] = $levelKey+1;
-	            						$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+	            						$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'],'language'=> $sLanguageCode));
 	            					
 	            						
 	            					}
@@ -3033,9 +3040,9 @@ class remotecontrol_handle
 	            			break;
 	            		case ':':
 	            			if(!in_array($value['qid'],$alreadyProcessed)){
-	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));
+	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0', 'language'=> $sLanguageCode),array('order'=>'title'));
 	            				foreach($subquestion as $key=>$values){
-	            					$data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
+	            					$data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1', 'language'=> $sLanguageCode),array('order'=>'title'));
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$values->attributes['title']."_".$insertdata->attributes['title'];
@@ -3051,9 +3058,9 @@ class remotecontrol_handle
 	            						
 	            					}
 	            				}
-	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1'),array('order'=>'title'));
+	            				$subquestion = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '1', 'language'=> $sLanguageCode),array('order'=>'title'));
 	            				foreach($subquestion as $key=>$values){
-	            					$data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0'),array('order'=>'title'));
+	            					$data = Questions::model()->findAllByAttributes(array("parent_qid"=>$value['qid'],'scale_id' => '0', 'language'=> $sLanguageCode),array('order'=>'title'));
 	            					foreach($data as $insertdata)
 	            					{
 	            						$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$insertdata->attributes['title']."_".$values->attributes['title'];
@@ -3070,7 +3077,7 @@ class remotecontrol_handle
 	            					
 	            				}
 
-	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid']));
+	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
 	            					$dataHeader[] = 'other';
 	            				}
@@ -3106,7 +3113,7 @@ class remotecontrol_handle
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue['title'];
 	            					
 	            		     		if(isset($result[$sqga])){
-	            		     			$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
+	            		     			$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] , 'language'=> $sLanguageCode),array('order'=>'sortorder') );
 	            		     			$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            		     			$resultArray[$i][] = $levelKey+1;
 	            					}
@@ -3124,7 +3131,7 @@ class remotecontrol_handle
 	            						$resultArray[$i][] = str_replace(',','.',$result[$sqga]);
 	            					}
 	            					else{
-	            						$resultArray[$i][] = '';
+	            						$resultArray[$i][] = 'NA';
 	            					}
 	            					$alreadyProcessed[] = $value['qid'];
 	            				}
@@ -3188,7 +3195,7 @@ class remotecontrol_handle
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$questionvalue->attributes['title'];
 	            					
 	            					if(isset($result[$sqga])){
-	            						$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga] ),array('order'=>'sortorder') );
+	            						$answer = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'code'=> $result[$sqga], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
 	            						$levelKey = array_search($answer[0]->attributes['answer'],$optionsData[$mappingArray[$value['qid']]]);
 	            						$resultArray[$i][] = $levelKey+1;
 	            						
@@ -3309,7 +3316,8 @@ class remotecontrol_handle
         	}
         	$csv_array[] = Array($k, $v);
         }
-        unset($writearray[13]);
+        array_pop($writearray);
+        //unset($writearray[13]);
         $fp = fopen($directory.'/'.$filename.'02.csv', 'w');
  
         my_fputcsv($fp, $header);
