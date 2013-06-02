@@ -2912,7 +2912,7 @@ class remotecontrol_handle
             foreach($data as $result){            	
             	$i++;
             	
-            	$resultArray[$i][]=$result['token'];
+            	$resultArray[$i][]=$result['id'];
             	$resultArray[$i][]=$result['token'];
             	$alreadyProcessed = array();
             	foreach($fieldmap as $key=>$value)
