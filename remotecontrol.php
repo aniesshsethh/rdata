@@ -3303,12 +3303,13 @@ class remotecontrol_handle
         	
         	$i=0;
         	foreach($v as $r){
+        		
         		$writearray[$i][] = $r;
         		$i++;
         	}
         	$csv_array[] = Array($k, $v);
         }
-        
+        unset($writearray[13]);
         $fp = fopen($directory.'/'.$filename.'02.csv', 'w');
  
         my_fputcsv($fp, $header);
