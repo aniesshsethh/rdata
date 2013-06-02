@@ -3241,7 +3241,7 @@ class remotecontrol_handle
         $directory = 'rdata/'.$iSurveyID;
         mkdir($directory, 0775);
    
-        $filename = $iSurveyID."_Rdata_survey_";
+        $filename = $iSurveyID."-".$sLanguageCode."_Rdata_survey_";
         $fp = fopen($directory.'/'.$filename.'01.csv', 'w');
         $header = array('','label','type','item','offset','level','lang','unit','question','info','comment');
        my_fputcsv($fp, $header);
