@@ -2871,8 +2871,8 @@ class remotecontrol_handle
 	            					if(is_null($result[$sqga])){
 	            						$resultArray[$i][] = '';
 	            					}else{
-	            						if(isset($result[$sqga])){
-	            							$resultArray[$i][] = $result[$sqga];
+	            						if(strlen($result[$sqga])){
+	            							$resultArray[$i][] = 1;
 	            						}else{
 	            							$resultArray[$i][] = 0;
 	            						}
@@ -3010,31 +3010,46 @@ class remotecontrol_handle
 
 	            				$othercheck = Questions::model()->findAllByAttributes(array("qid"=>$value['qid'], 'language'=> $sLanguageCode));
 	            				if($othercheck[0]->attributes['other'] == 'Y'){
-	            					$dataHeader[] = 'other';
+	            					//$dataHeader[] = 'other';
 	            				}
 	            				$alreadyProcessed[] = $value['qid'];
 	    
 	            			}
 	            			break;
 	            		case 'R':
-	            			if($value['aid'] == 1){
-	            				
+	            			if($value['aid'] == 1){	            				
 	            				$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
-	            				
-	            				 
+	            				$temparray = array();
 	            				foreach($data as $attributevalue){
-	            			
-	            					
 	            					$sqga = $iSurveyID."X".$value['gid']."X".$value['qid'].$attributevalue['code'];
-	            					if(isset($result[$sqga])){
 	            					
-	            						$resultArray[$i][] = $result[$sqga];
+	            					if(isset($result[$sqga])){
+	            						$temparray[$attributevalue['code']] = $result[$sqga];
+	            						
 	            					}
 	            					else{
-	            						$resultArray[$i][] = '';
+	            						$temparray[$attributevalue['code']] = '';
+	            						
 	            					}
 	            					
 	            				}
+	            				
+	            					$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
+	            					foreach($data as $attributevalue){
+	            						$attrcheck = false;
+	            						foreach($temparray as $key=>$value){
+	            							if($attributevalue['code']==$value){
+	            								$resultArray[$i][] = $key;
+	            								$attrcheck = true;
+	            							}
+	            						}
+	            						if(!$attrcheck){
+	            							$resultArray[$i][] = '';
+	            						}
+	            					}
+	            				
+	            				
+	            				
 	            			}
 	            			break;
 	            		case 'F':
