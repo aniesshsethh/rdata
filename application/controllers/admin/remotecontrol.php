@@ -2650,7 +2650,7 @@ class remotecontrol_handle
                         break;
                     case 'R':
                         if($value['aid'] == 1){
-                            $data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
+                            $data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
                             $j++;
                             $mappingArray[$value['qid']]=$j;
                             $questionsData[] = array($j,ms_RmBr($value['title']),'order',count($data),count($dataHeader)+1,0,$sLanguageCode,'',ms_RmBr($value['question']),'',$value['gid']."|".$value['qid']."(".$type.")");    
@@ -3034,7 +3034,7 @@ class remotecontrol_handle
 	            					
 	            				}
 	            				
-	            					$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'code') );
+	            					$data = Answers::model()->findAllByAttributes(array('qid' => $value['qid'], 'language'=> $sLanguageCode ),array('order'=>'sortorder') );
 	            					foreach($data as $attributevalue){
 	            						$attrcheck = false;
 	            						foreach($temparray as $key=>$value){
